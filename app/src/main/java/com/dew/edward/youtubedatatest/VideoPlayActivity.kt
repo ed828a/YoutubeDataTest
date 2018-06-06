@@ -50,6 +50,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
     lateinit var channelModel: ChannelModel
     lateinit var relatedVideoGetUrl: String
     val relatedVideoList = ArrayList<RelatedVideoModel>()
+    var isRelatedVideo: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,18 +66,31 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         textVideoPlayTitle?.text = channelModel.title
 
         recyclerRelatedListView?.layoutManager = GridLayoutManager(this, 2)
-        recyclerRelatedListView?.adapter = RelatedVideoAdapter(this, relatedVideoList){
-            // onClickListener
+        recyclerRelatedListView?.adapter = RelatedVideoAdapter(this, relatedVideoList) {
+
+            App.mYoutubePlayer?.release()
+            youtubePlayer.initialize(API_KEY, this)
+            textVideoPlayTitle?.text = it.title
+            channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
+            relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
+            isRelatedVideo = true
+
+            RequestYoutubeAPI().execute()
         }
 
         RequestYoutubeAPI().execute()
     }
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
-            player?.setPlayerStateChangeListener(playerStateChangeListener)
-            player?.setPlaybackEventListener(playbackEventListener)
-            if (!wasRestored) {
+        player?.setPlayerStateChangeListener(playerStateChangeListener)
+        player?.setPlaybackEventListener(playbackEventListener)
+        if (!wasRestored) {
             player?.cueVideo(channelModel.videoId)
+        }
+
+        if (isRelatedVideo){
+            player?.cueVideo(channelModel.videoId)
+            isRelatedVideo = false
         }
 
         if (player != null) {
@@ -139,7 +153,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         // not completed yet
     }
 
-    inner class RequestYoutubeAPI: AsyncTask<Void, String, String>(){
+    inner class RequestYoutubeAPI : AsyncTask<Void, String, String>() {
 
         override fun doInBackground(vararg params: Void?): String {
             val httpClient: HttpClient = DefaultHttpClient()
@@ -147,7 +161,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
             Log.e("URL", relatedVideoGetUrl)
 
 
-            var json: String =""
+            var json: String = ""
             try {
                 val response: HttpResponse = httpClient.execute(httpGet)
                 val httpEntity = response.entity
@@ -161,7 +175,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
 
         override fun onPostExecute(response: String?) {
             super.onPostExecute(response)
-            if (response != null){
+            if (response != null) {
                 try {
                     val jsonObject: JSONObject = JSONObject(response)
                     Log.e("RESPONSE", jsonObject.toString())
@@ -176,20 +190,20 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
 
         private fun parseVideoListFromResponse(jsonObject: JSONObject) {
 
-            if (jsonObject.has("items")){
+            if (jsonObject.has("items")) {
                 relatedVideoList.clear()
                 try {
                     val jsonArray: JSONArray = jsonObject.getJSONArray("items")
                     for (i in 0 until jsonArray.length()) {
                         val json = jsonArray[i] as JSONObject
-                        if (json.has("id")){
+                        if (json.has("id")) {
                             val jsonID = json.getJSONObject("id")
                             var video_id = ""
-                            if (jsonID.has("videoId")){
+                            if (jsonID.has("videoId")) {
                                 video_id = jsonID.getString("videoId")
                             }
-                            if (jsonID.has("kind")){
-                                if (jsonID.getString("kind").equals("youtube#video")){
+                            if (jsonID.has("kind")) {
+                                if (jsonID.getString("kind").equals("youtube#video")) {
                                     val jsonSnippet = json.getJSONObject("snippet")
                                     val title = jsonSnippet.getString("title")
                                     val channelTitle = jsonSnippet.getString("channelTitle")
@@ -199,13 +213,14 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
                                             .getJSONObject("high").getString("url")
 
                                     val relatedVideoModel = RelatedVideoModel(title,
-                                                                             thumbnail, video_id)
+                                            channelTitle, publishedAt, thumbnail, video_id)
+
                                     relatedVideoList.add(relatedVideoModel)
                                 }
                             }
                         }
                     }
-                } catch (e: Throwable){
+                } catch (e: Throwable) {
                     e.printStackTrace()
                 }
             }
@@ -217,5 +232,13 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
 
     }
 
+    override fun onDestroy() {
+
+        if (App.mYoutubePlayer != null){
+            App.mYoutubePlayer?.release()
+        }
+
+        super.onDestroy()
+    }
 }
 
