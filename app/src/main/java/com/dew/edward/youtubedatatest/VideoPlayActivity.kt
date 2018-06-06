@@ -10,8 +10,6 @@ import at.huber.youtubeExtractor.YouTubeExtractor
 import at.huber.youtubeExtractor.YouTubeUriExtractor
 import at.huber.youtubeExtractor.YtFile
 import com.dew.edward.youtubedatatest.model.ChannelModel
-import com.dew.edward.youtubedatatest.modules.API_KEY
-import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
 
 import com.google.android.youtube.player.YouTubeBaseActivity
 import com.google.android.youtube.player.YouTubeInitializationResult
@@ -26,7 +24,18 @@ import android.app.ProgressDialog
 import android.os.AsyncTask
 import android.os.Environment
 import android.os.PersistableBundle
-import com.dew.edward.youtubedatatest.modules.App
+import android.support.v7.widget.GridLayoutManager
+import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
+import com.dew.edward.youtubedatatest.fragments.extractDate
+import com.dew.edward.youtubedatatest.model.RelatedVideoModel
+import com.dew.edward.youtubedatatest.modules.*
+import org.apache.http.HttpResponse
+import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.util.EntityUtils
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -39,28 +48,39 @@ import java.net.URLConnection
 class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedListener {
 
     lateinit var channelModel: ChannelModel
-
+    lateinit var relatedVideoGetUrl: String
+    val relatedVideoList = ArrayList<RelatedVideoModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video_play)
 
         channelModel = intent.getParcelableExtra(CHANNEL_MODEL)
-        Log.e("Rotate", "onCreate: initialize")
+
+        relatedVideoGetUrl = SEARCH_RELATED_PART1 + channelModel.videoId + SEARCH_RELATED_PART2
+        Log.e("Rotate", "Related Video Url: $relatedVideoGetUrl")
+
+
         youtubePlayer.initialize(API_KEY, this)
+        textVideoPlayTitle?.text = channelModel.title
 
+        recyclerRelatedListView?.layoutManager = GridLayoutManager(this, 2)
+        recyclerRelatedListView?.adapter = RelatedVideoAdapter(this, relatedVideoList){
+            // onClickListener
+        }
 
+        RequestYoutubeAPI().execute()
     }
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
-        player?.setPlayerStateChangeListener(playerStateChangeListener)
-        player?.setPlaybackEventListener(playbackEventListener)
-        if (!wasRestored) {
+            player?.setPlayerStateChangeListener(playerStateChangeListener)
+            player?.setPlaybackEventListener(playbackEventListener)
+            if (!wasRestored) {
             player?.cueVideo(channelModel.videoId)
         }
 
         if (player != null) {
-            Log.e("Rotate", "App.mYoutubePlayer = player:  ${player.toString()}")
+            Log.e("Rotate", "App.mYoutubePlayer = player:  ${player?.toString()}")
             App.mYoutubePlayer = player
         }
     }
@@ -117,6 +137,84 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         val link = "https://www.youtube.com/watch?=${channelModel.videoId}"
         Log.d("Download", "downloadVideo: $link")
         // not completed yet
+    }
+
+    inner class RequestYoutubeAPI: AsyncTask<Void, String, String>(){
+
+        override fun doInBackground(vararg params: Void?): String {
+            val httpClient: HttpClient = DefaultHttpClient()
+            val httpGet: HttpGet = HttpGet(relatedVideoGetUrl)
+            Log.e("URL", relatedVideoGetUrl)
+
+
+            var json: String =""
+            try {
+                val response: HttpResponse = httpClient.execute(httpGet)
+                val httpEntity = response.entity
+                json = EntityUtils.toString(httpEntity)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+
+            return json
+        }
+
+        override fun onPostExecute(response: String?) {
+            super.onPostExecute(response)
+            if (response != null){
+                try {
+                    val jsonObject: JSONObject = JSONObject(response)
+                    Log.e("RESPONSE", jsonObject.toString())
+                    parseVideoListFromResponse(jsonObject)
+                    recyclerRelatedListView.adapter.notifyDataSetChanged()
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        private fun parseVideoListFromResponse(jsonObject: JSONObject) {
+
+            if (jsonObject.has("items")){
+                relatedVideoList.clear()
+                try {
+                    val jsonArray: JSONArray = jsonObject.getJSONArray("items")
+                    for (i in 0 until jsonArray.length()) {
+                        val json = jsonArray[i] as JSONObject
+                        if (json.has("id")){
+                            val jsonID = json.getJSONObject("id")
+                            var video_id = ""
+                            if (jsonID.has("videoId")){
+                                video_id = jsonID.getString("videoId")
+                            }
+                            if (jsonID.has("kind")){
+                                if (jsonID.getString("kind").equals("youtube#video")){
+                                    val jsonSnippet = json.getJSONObject("snippet")
+                                    val title = jsonSnippet.getString("title")
+                                    val channelTitle = jsonSnippet.getString("channelTitle")
+                                    val publishedAt = jsonSnippet.getString("publishedAt").extractDate()
+                                    Log.d("Strings", publishedAt)
+                                    val thumbnail = jsonSnippet.getJSONObject("thumbnails")
+                                            .getJSONObject("high").getString("url")
+
+                                    val relatedVideoModel = RelatedVideoModel(title,
+                                                                             thumbnail, video_id)
+                                    relatedVideoList.add(relatedVideoModel)
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Throwable){
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        override fun onPreExecute() {
+            super.onPreExecute()
+        }
+
     }
 
 }

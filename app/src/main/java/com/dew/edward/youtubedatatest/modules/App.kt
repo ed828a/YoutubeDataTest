@@ -10,6 +10,7 @@ import com.google.android.youtube.player.YouTubePlayer
 class App:Application() {
     companion object {
         var mYoutubePlayer: YouTubePlayer? = null
+
     }
 
 }
