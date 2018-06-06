@@ -180,7 +180,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
                     val jsonObject: JSONObject = JSONObject(response)
                     Log.e("RESPONSE", jsonObject.toString())
                     parseVideoListFromResponse(jsonObject)
-                    recyclerRelatedListView.adapter.notifyDataSetChanged()
+                    recyclerRelatedListView?.adapter?.notifyDataSetChanged()
 
                 } catch (e: Exception) {
                     e.printStackTrace()
