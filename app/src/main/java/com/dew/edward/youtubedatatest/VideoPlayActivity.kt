@@ -57,9 +57,11 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         player?.setPlaybackEventListener(playbackEventListener)
         if (!wasRestored) {
             player?.cueVideo(channelModel.videoId)
-            if (player != null) {
-                App.mYoutubePlayer = player
-            }
+        }
+
+        if (player != null) {
+            Log.e("Rotate", "App.mYoutubePlayer = player:  ${player.toString()}")
+            App.mYoutubePlayer = player
         }
     }
 
@@ -114,115 +116,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         // video id should get out of Channel Model
         val link = "https://www.youtube.com/watch?=${channelModel.videoId}"
         Log.d("Download", "downloadVideo: $link")
-
-        val ytEx = object : YouTubeUriExtractor(this) {
-            override fun onUrisAvailable(videoID: String, videoTitle: String, ytFiles: SparseArray<YtFile>?) {
-                if (ytFiles != null) {
-                    val itag = 22
-                    //This is the download URL
-                    val downloadURL = ytFiles.get(itag).url
-                    Log.e("download URL :", downloadURL)
-
-                    //now download it like a file
-                    RequestDownloadVideoStream().execute(downloadURL, videoTitle)
-
-
-                }
-
-            }
-        }
-
-
-//        ytEx.execute(link)
-
-    }
-
-    private inner class RequestDownloadVideoStream : AsyncTask<String, String, String>() {
-        private val pDialog = ProgressDialog(this@VideoPlayActivity)
-        override fun onPreExecute() {
-            super.onPreExecute()
-
-            pDialog.setMessage("Downloading file. Please wait...")
-            pDialog.setIndeterminate(false)
-            pDialog.setMax(100)
-            pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
-            pDialog.setCancelable(false)
-            pDialog.show()
-        }
-
-        override fun doInBackground(vararg params: String): String? {
-            var `is`: InputStream? = null
-            var u: URL? = null
-            var len1 = 0
-            var temp_progress = 0
-            var progress = 0
-            try {
-                u = URL(params[0])
-                `is` = u!!.openStream()
-                val huc = u!!.openConnection() as URLConnection
-                huc!!.connect()
-                val size = huc!!.getContentLength()
-
-                if (huc != null) {
-                    val file_name = params[1] + ".mp4"
-                    val storagePath = "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/YoutubeVideos"
-                    val f = File(storagePath)
-                    if (!f.exists()) {
-                        f.mkdir()
-                    }
-
-                    val fos = FileOutputStream("$f/$file_name")
-                    val buffer = ByteArray(1024)
-                    var total = 0
-                    if (`is` != null) {
-                        val len1 = `is`!!.read(buffer)
-                        while (len1 != -1) {
-                            total += len1
-                            // publishing the progress....
-                            // After this onProgressUpdate will be called
-                            progress = (total * 100 / size).toInt()
-                            if (progress >= 0) {
-                                temp_progress = progress
-                                publishProgress("" + progress)
-                            } else
-                                publishProgress("" + temp_progress + 1)
-
-                            fos.write(buffer, 0, len1)
-                        }
-                    }
-
-                    if (fos != null) {
-                        publishProgress("" + 100)
-                        fos.close()
-                    }
-                }
-            } catch (e: MalformedURLException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } finally {
-                if (`is` != null) {
-                    try {
-                        `is`!!.close()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-
-                }
-            }
-            return null
-        }
-
-        override fun onProgressUpdate(vararg values: String) {
-            super.onProgressUpdate(*values)
-            pDialog.setProgress(Integer.parseInt(values[0]))
-        }
-
-        override fun onPostExecute(s: String) {
-            super.onPostExecute(s)
-            if (pDialog.isShowing())
-                pDialog.dismiss()
-        }
+        // not completed yet
     }
 
 }
