@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.dew.edward.youtubedatatest.R
+import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.model.RelatedVideoModel
 import com.dew.edward.youtubedatatest.modules.GlideApp
 import kotlinx.android.synthetic.main.related_list_cell.view.*
@@ -17,8 +18,8 @@ import kotlinx.android.synthetic.main.related_list_cell.view.*
  */
 
 class RelatedVideoAdapter(val context: Context,
-                          val relatedVideoList: ArrayList<RelatedVideoModel>,
-                          val listener: (RelatedVideoModel) -> Unit):
+                          val relatedVideoList: ArrayList<ChannelModel>,
+                          val listener: (ChannelModel) -> Unit):
         RecyclerView.Adapter<RelatedVideoAdapter.RelatedVideoViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RelatedVideoViewHolder {
@@ -46,7 +47,7 @@ class RelatedVideoAdapter(val context: Context,
         val textTitle= itemView?.textRelatedTitle
         val imageThumb = itemView?.imageViewRelated
 
-        fun setOnItemClickListener(relatedVideo: RelatedVideoModel){
+        fun setOnItemClickListener(relatedVideo: ChannelModel){
             itemView.setOnClickListener { listener(relatedVideo) }
         }
 

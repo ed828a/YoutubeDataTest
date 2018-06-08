@@ -1,34 +1,21 @@
 package com.dew.edward.youtubedatatest
 
-import android.arch.lifecycle.ViewModelProvider
-import android.support.v7.app.AppCompatActivity
+import android.os.AsyncTask
 import android.os.Bundle
+import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.util.Log
-import android.util.SparseArray
 import android.view.View
-import at.huber.youtubeExtractor.YouTubeExtractor
-import at.huber.youtubeExtractor.YouTubeUriExtractor
-import at.huber.youtubeExtractor.YtFile
+import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
-
+import com.dew.edward.youtubedatatest.model.RelatedVideoModel
+import com.dew.edward.youtubedatatest.modules.*
+import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
+import com.dew.edward.youtubedatatest.repository.extractDate
 import com.google.android.youtube.player.YouTubeBaseActivity
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
 import kotlinx.android.synthetic.main.activity_video_play.*
-import android.os.AsyncTask.execute
-import android.system.Os.mkdir
-import java.nio.file.Files.exists
-import android.os.Environment.DIRECTORY_DOWNLOADS
-import android.os.Environment.getExternalStoragePublicDirectory
-import android.app.ProgressDialog
-import android.os.AsyncTask
-import android.os.Environment
-import android.os.PersistableBundle
-import android.support.v7.widget.GridLayoutManager
-import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
-import com.dew.edward.youtubedatatest.fragments.extractDate
-import com.dew.edward.youtubedatatest.model.RelatedVideoModel
-import com.dew.edward.youtubedatatest.modules.*
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
@@ -36,21 +23,16 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.util.EntityUtils
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
-import java.net.MalformedURLException
-import java.net.URL
-import java.net.URLConnection
 
 
 class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedListener {
 
     lateinit var channelModel: ChannelModel
     lateinit var relatedVideoGetUrl: String
-    val relatedVideoList = ArrayList<RelatedVideoModel>()
+    val relatedVideoList = ArrayList<ChannelModel>()
     var isRelatedVideo: Boolean = false
+    lateinit var listView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,8 +47,9 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         youtubePlayer.initialize(API_KEY, this)
         textVideoPlayTitle?.text = channelModel.title
 
-        recyclerRelatedListView?.layoutManager = GridLayoutManager(this, 2)
-        recyclerRelatedListView?.adapter = RelatedVideoAdapter(this, relatedVideoList) {
+        listView = recyclerRelatedListView
+        listView.layoutManager = GridLayoutManager(this, 2)
+        listView.adapter = RelatedVideoAdapter(this, relatedVideoList) {
 
             App.mYoutubePlayer?.release()
             youtubePlayer.initialize(API_KEY, this)
@@ -75,10 +58,15 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
             relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
             isRelatedVideo = true
 
-            RequestYoutubeAPI().execute()
+//            RequestYoutubeAPI().execute()
+            YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
+            Log.d("RelateVideoList", relatedVideoList.toString())
         }
 
-        RequestYoutubeAPI().execute()
+        YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
+        Log.d("RelateVideoList", relatedVideoList.toString())
+//        RequestYoutubeAPI().execute()
+
     }
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
@@ -215,7 +203,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
                                     val relatedVideoModel = RelatedVideoModel(title,
                                             channelTitle, publishedAt, thumbnail, video_id)
 
-                                    relatedVideoList.add(relatedVideoModel)
+//                                    relatedVideoList.add(relatedVideoModel)
                                 }
                             }
                         }

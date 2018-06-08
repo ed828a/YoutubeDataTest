@@ -23,22 +23,35 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:onClick="downloadVideo"
-        app:layout_constraintDimensionRatio=""
-        app:layout_constraintEnd_toStartOf="@+id/imageButton"
+        app:layout_constraintEnd_toStartOf="@+id/buttonDownload"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/youtubePlayer"
         tools:text="NEW MOVIE TRAILERS 2018 | Weekly #22" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/buttonDownload"
         style="@android:style/Widget.Material.Light.ImageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
+        android:background="@color/colorPrimaryDark"
         android:src="@drawable/download"
+        app:layout_constraintEnd_toStartOf="@id/buttonSearch"
+        app:layout_constraintTop_toTopOf="@id/buttonSearch"
+        app:layout_constraintBottom_toBottomOf="@id/buttonSearch"
+
+         />
+
+    <ImageButton
+        android:id="@+id/buttonSearch"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_search_white_24dp"
+        android:background="@color/colorPrimaryDark"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/youtubePlayer" />
+        app:layout_constraintTop_toBottomOf="@id/youtubePlayer"
+        app:layout_constraintBottom_toTopOf="@id/recyclerRelatedListView"
+         />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerRelatedListView"

@@ -12,3 +12,6 @@ const val SEARCH_GET_URL = "https://www.googleapis.com/youtube/v3/search?part=sn
 const val SEARCH_RELATED_PART1 = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&relatedToVideoId="
 const val SEARCH_RELATED_PART2 ="&type=video&key=$API_KEY"
 // GET https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&relatedToVideoId=Ks-_Mh1QhMc&type=video&key={YOUR_API_KEY}
+const val QUERY = "Query"
+const val GET_REQUEST_URL = "GET REQUEST URL"
+const val GET_RESPONSE = "RESPONSE"

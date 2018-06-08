@@ -20,6 +20,8 @@ import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_GET_URL
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
 import com.dew.edward.youtubedatatest.modules.SEARCH_GET_URL
+import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
+import com.dew.edward.youtubedatatest.repository.extractDate
 import kotlinx.android.synthetic.main.fragment_channel.*
 import kotlinx.android.synthetic.main.fragment_channel.view.*
 import org.apache.http.HttpResponse
@@ -55,7 +57,8 @@ class ChannelFragment : Fragment() {
         mListView = view.channelListView
 
         initList(mListData)
-        RequestYoutubeAPI().execute()
+//        RequestYoutubeAPI().execute()
+        YoutubeAPIRequest(mListData, SEARCH_GET_URL, mListView.adapter).execute()
 
         return view
     }
@@ -156,8 +159,3 @@ class ChannelFragment : Fragment() {
 }
 
 
-fun String.extractDate(): String {
-    val stringArray = this.split('T')
-    return stringArray[0]
-
-}
