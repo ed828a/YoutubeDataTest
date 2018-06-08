@@ -1,12 +1,10 @@
 package com.dew.edward.youtubedatatest
 
-import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.SearchView
 import android.util.Log
-import android.view.View
 import com.dew.edward.youtubedatatest.adapters.PageAdapter
 import com.dew.edward.youtubedatatest.modules.QUERY
 import kotlinx.android.synthetic.main.activity_main.*

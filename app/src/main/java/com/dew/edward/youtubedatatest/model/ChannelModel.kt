@@ -15,8 +15,7 @@ data class ChannelModel(val title: String ="", val channelTitle: String ="",
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
-            parcel.readString()) {
-    }
+            parcel.readString())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(title)

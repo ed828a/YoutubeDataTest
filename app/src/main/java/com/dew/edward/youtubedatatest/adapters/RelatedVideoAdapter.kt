@@ -6,10 +6,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import com.dew.edward.youtubedatatest.R
 import com.dew.edward.youtubedatatest.model.ChannelModel
-import com.dew.edward.youtubedatatest.model.RelatedVideoModel
 import com.dew.edward.youtubedatatest.modules.GlideApp
 import kotlinx.android.synthetic.main.related_list_cell.view.*
 
