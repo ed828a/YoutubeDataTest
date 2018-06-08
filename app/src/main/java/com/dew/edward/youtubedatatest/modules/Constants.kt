@@ -15,3 +15,4 @@ const val SEARCH_RELATED_PART2 ="&type=video&key=$API_KEY"
 const val QUERY = "Query"
 const val GET_REQUEST_URL = "GET REQUEST URL"
 const val GET_RESPONSE = "RESPONSE"
+const val TAB_TOTAL = 3

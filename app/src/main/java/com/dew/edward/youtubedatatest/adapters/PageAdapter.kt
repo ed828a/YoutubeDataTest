@@ -24,4 +24,12 @@ class PageAdapter(fragmentManager: FragmentManager, val numberOfTabs: Int) :
     }
 
     override fun getCount(): Int = numberOfTabs
+    override fun getPageTitle(position: Int): CharSequence? {
+        return when (position) {
+            0 -> "Trailers"
+            1 -> "Playlist"
+            2 -> "Live"
+            else -> null
+        }
+    }
 }
