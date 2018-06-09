@@ -19,7 +19,7 @@ import java.io.IOException
  * Created by Edward on 6/8/2018.
  */
 
-class YoutubeAPIRequest(private val dateList: ArrayList<ChannelModel>,
+class YoutubeAPIRequest(private val dataList: ArrayList<ChannelModel>,
                         private val getRequestUrl: String,
                         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>) :
         AsyncTask<Void, String, String>() {
@@ -48,7 +48,8 @@ class YoutubeAPIRequest(private val dateList: ArrayList<ChannelModel>,
         if (response != null){
             try {
                 val jsonObject = JSONObject(response)
-                parseVideoListFromResponse(jsonObject, dateList)
+                parseVideoListFromResponse(jsonObject, dataList)
+                Log.d("REQUEST", dataList[0].toString())
                 adapter.notifyDataSetChanged()
             } catch (e: Exception) {
                 e.printStackTrace()

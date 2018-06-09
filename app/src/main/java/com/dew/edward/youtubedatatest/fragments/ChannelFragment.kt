@@ -1,6 +1,7 @@
 package com.dew.edward.youtubedatatest.fragments
 
 
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -17,6 +18,7 @@ import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
 import com.dew.edward.youtubedatatest.modules.SEARCH_GET_URL
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
+import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
 import kotlinx.android.synthetic.main.fragment_channel.view.*
 
 
@@ -27,11 +29,16 @@ import kotlinx.android.synthetic.main.fragment_channel.view.*
 class ChannelFragment : Fragment() {
 
     lateinit var mListView: RecyclerView
-    var mListData: ArrayList<ChannelModel> = arrayListOf(ChannelModel(
-            "Grenfell Inquiry: How the fire started and spread",
-            "The Grenfell Tower inquiry is now examining how the fire started and spread. Using witness evidence and testimony from the emergency services and residents, ...",
-            "2018-06-05",
-            "https://i.ytimg.com/vi/zzhrIZCm2qk/hqdefault_live.jpg", "bVztmlmvPOw"))
+    var mListData: ArrayList<ChannelModel> = arrayListOf()
+
+    private val queryViewModel by lazy {
+        ViewModelProviders.of(activity!!).get(QueryUrlViewModel::class.java)
+    }
+    lateinit var adapter: ChannelPostAdapter
+
+
+
+//    lateinit var queryViewModel: QueryUrlViewModel
 
 
 
@@ -39,18 +46,25 @@ class ChannelFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_channel, container, false)
-
+        Log.d("REQUEST", "onCreateView was hit: ${queryViewModel.getYoutubeQueryUrl()}")
         mListView = view.channelListView
 
         initList(mListData)
-        YoutubeAPIRequest(mListData, SEARCH_GET_URL, mListView.adapter).execute()
+        YoutubeAPIRequest(mListData, queryViewModel.getYoutubeQueryUrl(),
+                adapter as RecyclerView.Adapter<RecyclerView.ViewHolder> ).execute()
 
         return view
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+//        queryViewModel =  ViewModelProviders.of(activity!!).get(QueryUrlViewModel::class.java)
+//        YoutubeAPIRequest(mListData, queryViewModel.getYoutubeQueryUrl(), mListView.adapter).execute()
+    }
+
     private fun initList(listData : ArrayList<ChannelModel>) {
 
-        mListView.adapter = ChannelPostAdapter(activity as Context, listData){
+        adapter= ChannelPostAdapter(activity as Context, listData){
             channelModel ->
 
             val intent = Intent(activity, VideoPlayActivity::class.java)
@@ -59,6 +73,16 @@ class ChannelFragment : Fragment() {
             startActivity(intent)
         }
 
+        mListView.adapter = adapter
+    }
+
+    fun queryRequest(queryUrl: String){
+        Log.d("QueryRequest", "Url: $queryUrl")
+        YoutubeAPIRequest(mListData, queryUrl, mListView.adapter).execute()
+    }
+
+    companion object {
+        fun newInstance() = ChannelFragment()
     }
 
 }

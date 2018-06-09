@@ -16,7 +16,7 @@ class PageAdapter(fragmentManager: FragmentManager, val numberOfTabs: Int) :
 
     override fun getItem(position: Int): Fragment {
         return when (position){
-            0 -> ChannelFragment()
+            0 -> ChannelFragment.newInstance()
             1 -> PlayListFragment()
             2 -> LiveFragment()
             else -> ChannelFragment()
@@ -24,6 +24,7 @@ class PageAdapter(fragmentManager: FragmentManager, val numberOfTabs: Int) :
     }
 
     override fun getCount(): Int = numberOfTabs
+
     override fun getPageTitle(position: Int): CharSequence? {
         return when (position) {
             0 -> "Trailers"
