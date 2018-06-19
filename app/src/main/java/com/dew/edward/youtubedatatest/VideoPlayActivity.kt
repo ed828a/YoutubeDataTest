@@ -32,27 +32,27 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         relatedVideoGetUrl = SEARCH_RELATED_PART1 + channelModel.videoId + SEARCH_RELATED_PART2
         Log.e("Rotate", "Related Video Url: $relatedVideoGetUrl")
 
-
         youtubePlayer.initialize(API_KEY, this)
-        textVideoPlayTitle?.text = channelModel.title
 
-        listView = recyclerRelatedListView
-        listView.layoutManager = GridLayoutManager(this, 2)
-        listView.adapter = RelatedVideoAdapter(this, relatedVideoList) {
+        if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+            textVideoPlayTitle?.text = channelModel.title
 
-            App.mYoutubePlayer?.release()
-            youtubePlayer.initialize(API_KEY, this)
-            textVideoPlayTitle?.text = it.title
-            channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
-            relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
-            isRelatedVideo = true
+            listView = recyclerRelatedListView
+            listView.layoutManager = GridLayoutManager(this, 2)
+            listView.adapter = RelatedVideoAdapter(this, relatedVideoList) {
+
+                App.mYoutubePlayer?.release()
+                youtubePlayer.initialize(API_KEY, this)
+                textVideoPlayTitle?.text = it.title
+                channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
+                relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
+                isRelatedVideo = true
+
+                YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
+            }
 
             YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
-
         }
-
-        YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
-
     }
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {

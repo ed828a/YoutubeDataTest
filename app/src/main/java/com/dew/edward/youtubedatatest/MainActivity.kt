@@ -5,13 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.util.Log
-import android.view.Menu
-import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
 import com.dew.edward.youtubedatatest.adapters.MainPostAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
@@ -32,7 +31,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        setSupportActionBar(toolbarMain)
+        if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE){
+            mainListView.layoutManager = GridLayoutManager(this, 2)
+        } else {
+            mainListView.layoutManager = LinearLayoutManager(this)
+        }
 
         initList(mListData)
         YoutubeAPIRequest(mListData, queryViewModel.getYoutubeQueryUrl(),
@@ -62,10 +65,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-
                 return false
             }
         })
+
 
     }
 
@@ -83,14 +86,8 @@ class MainActivity : AppCompatActivity() {
         mainListView.adapter = adapter
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.search_menu, menu)
-        return true
-    }
-
     private fun hideKeyboard() {
         val inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
         if (inputManager.isAcceptingText){
             inputManager.hideSoftInputFromWindow(currentFocus.windowToken, 0)
         }
