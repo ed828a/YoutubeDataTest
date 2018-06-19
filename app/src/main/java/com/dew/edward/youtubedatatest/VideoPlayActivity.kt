@@ -1,27 +1,35 @@
 package com.dew.edward.youtubedatatest
 
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v4.app.FragmentActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.SearchView
 import android.util.Log
 import android.view.View
 import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.*
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
+import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
+import com.dew.edward.youtubedatatest.viewmodels.QueryViewModelFactory
 import com.google.android.youtube.player.YouTubeBaseActivity
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_video_play.*
 
 
-class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedListener {
+class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedListener{
 
     lateinit var channelModel: ChannelModel
     lateinit var relatedVideoGetUrl: String
     val relatedVideoList = ArrayList<ChannelModel>()
     var isRelatedVideo: Boolean = false
     lateinit var listView: RecyclerView
+
+    lateinit var queryViewModel: QueryUrlViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +41,8 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         Log.e("Rotate", "Related Video Url: $relatedVideoGetUrl")
 
         youtubePlayer.initialize(API_KEY, this)
+
+        queryViewModel = QueryUrlViewModel()
 
         if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
             textVideoPlayTitle?.text = channelModel.title
@@ -52,7 +62,42 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
             }
 
             YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
+
+            buttonSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    var queryString: String =""
+                    val strings: List<String>? = query?.split(" ")
+                    if (strings != null && strings.isNotEmpty()){
+                        for (position in 0 until strings.size){
+                            queryString = if (position == 0){
+                                strings[position]
+                            } else {
+                                "$queryString+${strings[position]}"
+                            }
+                        }
+                    }
+                    queryViewModel.query = queryString
+
+                    buttonSearch.onActionViewCollapsed()
+//                hideKeyboard()
+                    Log.d("QUERY", "queryURL: ${queryViewModel.getYoutubeQueryUrl()}")
+                    YoutubeAPIRequest(relatedVideoList, queryViewModel.getYoutubeQueryUrl(),
+                            listView.adapter).execute()
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    return false
+                }
+            })
+
+
+
+
+
         }
+
+
     }
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
