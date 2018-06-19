@@ -1,35 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cordinatorLayoutActivityA"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="@color/colorPrimaryDark"
     tools:context=".MainActivity">
 
-    <android.support.design.widget.TabLayout
-        android:id="@+id/tabLayout"
-        android:layout_width="0dp"
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="6dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/searchViewMain"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:background="@android:color/transparent"
+        android:theme="@style/AppTheme.AppBarOverlay">
 
-    <android.support.v7.widget.SearchView
-        android:id="@+id/searchViewMain"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/tabLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbarMain"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:visibility="gone"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/viewPager"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tabLayout" />
+        <android.support.v7.widget.CardView
+            android:id="@+id/cardS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/colorPrimary"
+            app:cardElevation="5dp"
+            app:cardUseCompatPadding="true"
+            app:layout_scrollFlags="scroll|enterAlways">
 
-</android.support.constraint.ConstraintLayout>
+            <android.support.v7.widget.SearchView
+                android:id="@+id/searchViewQuery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:textColor="@color/colorPrimaryText"
+                app:closeIcon="@drawable/ic_close"
+                app:iconifiedByDefault="true"
+                app:popupTheme="@style/AppTheme.PopupOverlay"
+                app:queryHint="Search movies" />
+
+        </android.support.v7.widget.CardView>
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="fill_vertical"
+        android:focusableInTouchMode="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/mainListView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            tools:listitem="@layout/channel_post_cell" />
+
+    </android.support.v4.widget.NestedScrollView>
+
+</android.support.design.widget.CoordinatorLayout>

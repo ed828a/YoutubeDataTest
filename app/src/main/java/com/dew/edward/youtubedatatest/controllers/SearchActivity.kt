@@ -1,30 +1,23 @@
 package com.dew.edward.youtubedatatest.controllers
 
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.os.PersistableBundle
-import android.support.v4.view.MenuItemCompat
-import android.support.v7.widget.RecyclerView
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.SearchView
 import android.util.Log
 import android.view.Menu
-import android.widget.ArrayAdapter
-import android.widget.Toast
 import com.dew.edward.youtubedatatest.R
 import com.dew.edward.youtubedatatest.VideoPlayActivity
-import com.dew.edward.youtubedatatest.adapters.ChannelPostAdapter
+import com.dew.edward.youtubedatatest.adapters.MainPostAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
 import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_search.*
 
 class SearchActivity : AppCompatActivity() {
-    lateinit var adapter: ChannelPostAdapter
+    lateinit var adapter: MainPostAdapter
     private val queryViewModel by lazy {
         ViewModelProviders.of(this@SearchActivity).get(QueryUrlViewModel::class.java)
     }
@@ -36,7 +29,7 @@ class SearchActivity : AppCompatActivity() {
 
 //        setSupportActionBar(toolbarSearch)
 
-        adapter= ChannelPostAdapter(this@SearchActivity, mListData){
+        adapter= MainPostAdapter(this@SearchActivity, mListData){
             channelModel ->
             val intent = Intent(this@SearchActivity, VideoPlayActivity::class.java)
             Log.d("initList", channelModel.toString())
@@ -71,11 +64,9 @@ class SearchActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-
                 return false
             }
         })
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -106,7 +97,6 @@ class SearchActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-
                 return false
             }
         })

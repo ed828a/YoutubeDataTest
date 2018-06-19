@@ -15,4 +15,5 @@
         <item>November</item>
         <item>December</item>
     </string-array>
+    <string name="action_settings">Settings</string>
 </resources>

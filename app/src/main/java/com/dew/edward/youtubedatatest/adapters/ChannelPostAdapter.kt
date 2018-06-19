@@ -17,20 +17,20 @@ import kotlinx.android.synthetic.main.channel_post_cell.view.*
  * Created by Edward on 6/5/2018.
  */
 
-class ChannelPostAdapter(val context: Context, val channelList: List<ChannelModel>,
+class MainPostAdapter(val context: Context, val channelList: List<ChannelModel>,
                          val listener: (ChannelModel) -> Unit) :
-        RecyclerView.Adapter<ChannelPostAdapter.ChannelPostViewHolder>() {
+        RecyclerView.Adapter<MainPostAdapter.MainPostViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChannelPostViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainPostViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.channel_post_cell, parent, false)
 
-        return ChannelPostViewHolder(view)
+        return MainPostViewHolder(view)
     }
 
     override fun getItemCount(): Int = channelList.count()
 
-    override fun onBindViewHolder(holder: ChannelPostViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: MainPostViewHolder, position: Int) {
         Log.e("OnBindVuewHolder", "This is position $position")
         val channel = channelList[position]
         with(holder){
@@ -43,7 +43,7 @@ class ChannelPostAdapter(val context: Context, val channelList: List<ChannelMode
 
     }
 
-    inner class ChannelPostViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
+    inner class MainPostViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
         val textViewTitle = itemView?.textViewTitle
         val textViewDesc = itemView?.textViewChannelTitle
         val textViewDate = itemView?.textViewDate
