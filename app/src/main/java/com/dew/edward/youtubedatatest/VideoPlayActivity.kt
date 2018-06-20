@@ -57,6 +57,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
                 channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
                 relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
                 isRelatedVideo = true
+                intent.putExtra(CHANNEL_MODEL, it)  
 
                 YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
             }
@@ -90,11 +91,6 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
                     return false
                 }
             })
-
-
-
-
-
         }
 
 
@@ -113,7 +109,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         }
 
         if (player != null) {
-            Log.e("Rotate", "App.mYoutubePlayer = player:  ${player?.toString()}")
+            Log.e("Rotate", "App.mYoutubePlayer = player:  ${player.toString()}")
             App.mYoutubePlayer = player
         }
     }
