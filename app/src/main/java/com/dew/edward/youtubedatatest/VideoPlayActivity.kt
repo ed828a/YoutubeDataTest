@@ -1,8 +1,6 @@
 package com.dew.edward.youtubedatatest
 
-import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v4.app.FragmentActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
@@ -13,11 +11,9 @@ import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.*
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
 import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
-import com.dew.edward.youtubedatatest.viewmodels.QueryViewModelFactory
 import com.google.android.youtube.player.YouTubeBaseActivity
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_video_play.*
 
 
@@ -57,12 +53,19 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
                 channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
                 relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
                 isRelatedVideo = true
+                intent.putExtra(CHANNEL_MODEL, it)  
 
                 YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
             }
 
             YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
+            buttonSearch.setOnSearchClickListener {
+                buttonDownload.visibility = View.GONE
+                textVideoPlayTitle.visibility = View.GONE
 
+                buttonSearch.onActionViewExpanded()
+
+            }
             buttonSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     var queryString: String =""
@@ -80,6 +83,9 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
 
                     buttonSearch.onActionViewCollapsed()
 //                hideKeyboard()
+                    buttonDownload.visibility = View.VISIBLE
+                    textVideoPlayTitle.visibility = View.VISIBLE
+
                     Log.d("QUERY", "queryURL: ${queryViewModel.getYoutubeQueryUrl()}")
                     YoutubeAPIRequest(relatedVideoList, queryViewModel.getYoutubeQueryUrl(),
                             listView.adapter).execute()
@@ -90,14 +96,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
                     return false
                 }
             })
-
-
-
-
-
         }
-
-
     }
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
@@ -113,7 +112,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
         }
 
         if (player != null) {
-            Log.e("Rotate", "App.mYoutubePlayer = player:  ${player?.toString()}")
+            Log.e("Rotate", "App.mYoutubePlayer = player:  ${player.toString()}")
             App.mYoutubePlayer = player
         }
     }

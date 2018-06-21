@@ -21,11 +21,11 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
         android:onClick="downloadVideo"
         app:layout_constraintEnd_toStartOf="@+id/buttonDownload"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/youtubePlayer"
+        app:layout_constraintTop_toTopOf="@id/buttonSearch"
+        app:layout_constraintBottom_toBottomOf="@id/buttonSearch"
         tools:text="NEW MOVIE TRAILERS 2018 | Weekly #22" />
 
     <ImageButton
@@ -43,17 +43,17 @@
         android:id="@+id/buttonSearch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
         android:textColor="@color/colorPrimaryText"
         app:closeIcon="@drawable/ic_close"
         app:iconifiedByDefault="true"
-        app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:queryHint="Search movies"
         app:layout_constraintBottom_toTopOf="@id/recyclerRelatedListView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/youtubePlayer"
-        app:layout_constraintVertical_bias="0.421" />
+        app:layout_constraintTop_toBottomOf="@+id/youtubePlayer"
+        app:layout_constraintVertical_bias="0.421"
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        app:queryHint="Search movies" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerRelatedListView"
@@ -63,7 +63,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textVideoPlayTitle" />
+        app:layout_constraintTop_toBottomOf="@id/buttonSearch" />
 
 
 </android.support.constraint.ConstraintLayout>
