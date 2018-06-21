@@ -2,6 +2,7 @@ package com.dew.edward.youtubedatatest.model
 
 class SearchVideoResponse(val prevPageToken: String,
                           val nextPageToken: String,
+                          val pageInfo: PageInfo,
                           var items: List<Item>) {
     class Item(val id: ID,
                val snippet: Snippet) {
@@ -16,4 +17,6 @@ class SearchVideoResponse(val prevPageToken: String,
             }
         }
     }
+    class PageInfo(val totalResults: String,
+                   val resultsPerPage: String)
 }

@@ -15,6 +15,4 @@ data class Listing<T> (
         val refresh: () -> Unit,
         // retries any failed requests
         val retry: () -> Unit
-){
-
-}
+)

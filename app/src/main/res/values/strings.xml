@@ -16,4 +16,7 @@
         <item>December</item>
     </string-array>
     <string name="action_settings">Settings</string>
+    <string name="retry">Retry</string>
+    <string name="search_hint">search video</string>
+    <string name="default_query">trump HD</string>
 </resources>

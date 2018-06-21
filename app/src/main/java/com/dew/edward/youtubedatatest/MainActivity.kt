@@ -11,18 +11,12 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
 import com.dew.edward.youtubedatatest.adapters.MainPostAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
 import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
 import kotlinx.android.synthetic.main.activity_main.*
-import android.view.ViewGroup
-
-
-
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -38,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE){
-            mainListView.layoutManager = GridLayoutManager(this, 2) as RecyclerView.LayoutManager?
+            mainListView.layoutManager = GridLayoutManager(this, 2)
         } else {
             mainListView.layoutManager = LinearLayoutManager(this)
         }

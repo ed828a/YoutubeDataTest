@@ -1,40 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".controllers.SearchActivity">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbarSearch"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/colorPrimary"
-        android:minHeight="?android:attr/actionBarSize"
-        android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@id/searchAlone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/searchAlone" />
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/searchListView"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/input_layout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchAlone" />
-
-    <android.support.v7.widget.SearchView
-        android:id="@+id/searchAlone"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/searchListView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginStart="8dp"
+        android:focusedByDefault="false"
+        android:layout_marginTop="8dp">
+        <EditText
+            android:id="@+id/input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/search_hint"
+            android:imeOptions="actionSearch"
+            android:inputType="textNoSuggestions"
+            tools:text="androiddev"
+            android:text="@string/default_query"/>
+    </android.support.design.widget.TextInputLayout>
 
-</android.support.constraint.ConstraintLayout>
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/videoList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            tools:listitem="@layout/channel_post_cell" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</android.support.design.widget.CoordinatorLayout>
