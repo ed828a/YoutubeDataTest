@@ -23,17 +23,6 @@ interface YoutubeAPI {
                     @Query("type") type: String = "video",
                     @Query("key") key: String = API_KEY): Call<SearchVideoResponse>
 
-    class ListingResponse(val data: ListingData)
-
-    class ListingData(
-            val items: List<RedditChildrenResponse>,
-            val nextPageToken: String?,
-            val prevPageToken: String?
-    )
-
-    data class RedditChildrenResponse(val data: VideoModel)
-
-
     companion object {
         private const val YOUTUBE_BASE_URL = "https://www.googleapis.com/youtube/v3/"
         private const val NETWORK_PAGE_SIZE = 50
@@ -57,3 +46,13 @@ interface YoutubeAPI {
         }
     }
 }
+
+class ListingResponse(val data: ListingData)
+
+class ListingData(
+        val items: List<RedditChildrenResponse>,
+        val nextPageToken: String?,
+        val prevPageToken: String?
+)
+
+data class RedditChildrenResponse(val data: VideoModel)
