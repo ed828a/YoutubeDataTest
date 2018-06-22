@@ -25,10 +25,10 @@ interface YoutubeAPI {
 
     companion object {
         private const val YOUTUBE_BASE_URL = "https://www.googleapis.com/youtube/v3/"
-        private const val NETWORK_PAGE_SIZE = 50
+        private const val NETWORK_PAGE_SIZE = 10  //should be 50 in other case
 
         fun create(): YoutubeAPI = create(HttpUrl.parse(YOUTUBE_BASE_URL)!!)
-        fun create(httpUrl: HttpUrl): YoutubeAPI {
+        private fun create(httpUrl: HttpUrl): YoutubeAPI {
             val logger = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
                 Log.d("API", it)
             })

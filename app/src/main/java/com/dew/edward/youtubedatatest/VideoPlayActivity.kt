@@ -10,6 +10,7 @@ import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.*
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
+import com.dew.edward.youtubedatatest.util.VideoApp
 import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
 import com.google.android.youtube.player.YouTubeBaseActivity
 import com.google.android.youtube.player.YouTubeInitializationResult
@@ -47,7 +48,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
             listView.layoutManager = GridLayoutManager(this, 2)
             listView.adapter = RelatedVideoAdapter(this, relatedVideoList) {
 
-                App.mYoutubePlayer?.release()
+                VideoApp.mYoutubePlayer?.release()
                 youtubePlayer.initialize(API_KEY, this)
                 textVideoPlayTitle?.text = it.title
                 channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
@@ -113,7 +114,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
 
         if (player != null) {
             Log.e("Rotate", "App.mYoutubePlayer = player:  ${player.toString()}")
-            App.mYoutubePlayer = player
+            VideoApp.mYoutubePlayer = player
         }
     }
 
@@ -130,7 +131,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
 
                 override fun onLoaded(videoId: String?) {
                     Log.e("Rotate", "onLoaded: $videoId")
-                    App.mYoutubePlayer?.play()
+                    VideoApp.mYoutubePlayer?.play()
                 }
 
                 override fun onVideoEnded() {
@@ -173,8 +174,8 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
 
     override fun onDestroy() {
 
-        if (App.mYoutubePlayer != null){
-            App.mYoutubePlayer?.release()
+        if (VideoApp.mYoutubePlayer != null){
+            VideoApp.mYoutubePlayer?.release()
         }
 
         super.onDestroy()

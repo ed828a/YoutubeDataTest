@@ -2,9 +2,13 @@ package com.dew.edward.youtubedatatest.repository
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.paging.PageKeyedDataSource
+import android.content.Intent
+import android.util.Log
 import com.dew.edward.youtubedatatest.api.YoutubeAPI
 import com.dew.edward.youtubedatatest.model.SearchVideoResponse
 import com.dew.edward.youtubedatatest.model.VideoModel
+import com.dew.edward.youtubedatatest.util.BROADCAST_DATA_CHANGED
+import com.dew.edward.youtubedatatest.util.VideoApp
 import retrofit2.Call
 import retrofit2.Response
 import java.io.IOException
@@ -49,14 +53,19 @@ class PageKeyedYoutubeDataSource(
             val items = data?.items?.map{
                 VideoModel(it.snippet.title, it.snippet.publishedAt.extractDate(), it.snippet.thumbnails.high.url, it.id.videoId)
             }
-
+            // update pageTokens
             prevPage = data?.prevPageToken ?: ""
             nextPage = data?.nextPageToken ?: ""
             totalResults = data?.pageInfo?.totalResults ?: ""
 
+            retry = null
             networkState.postValue(NetworkState.LOADED)
             initialLoad.postValue(NetworkState.LOADED)
             callback.onResult(items!!.toMutableList(), prevPage, nextPage)
+            Log.d("loadInitial", "nextPageToken: $nextPage")
+            val userDataChanged = Intent(BROADCAST_DATA_CHANGED)
+            VideoApp.localBroadcastManager.sendBroadcast(userDataChanged)
+
         } catch (ioException: IOException){
             retry = {
                 loadInitial(params, callback)
@@ -69,7 +78,7 @@ class PageKeyedYoutubeDataSource(
 
     override fun loadAfter(params: LoadParams<String>, callback: LoadCallback<String, VideoModel>) {
         networkState.postValue(NetworkState.LOADING)
-        youtubeApi.searchVideo(query = searchQuery).enqueue(object : retrofit2.Callback<SearchVideoResponse>{
+        youtubeApi.searchVideo(query = searchQuery, pageToken = nextPage).enqueue(object : retrofit2.Callback<SearchVideoResponse>{
             override fun onFailure(call: Call<SearchVideoResponse>?, t: Throwable?) {
                 retry = {
                     loadAfter(params, callback)
@@ -83,16 +92,20 @@ class PageKeyedYoutubeDataSource(
                     val items = data?.items?.map {
                         VideoModel(it.snippet.title, it.snippet.publishedAt.extractDate(), it.snippet.thumbnails.high.url, it.id.videoId)
                     }
+                    // update pageTokens
                     prevPage = data?.prevPageToken ?: ""
                     nextPage = data?.nextPageToken ?: ""
                     totalResults = data?.pageInfo?.totalResults ?: ""
 
                     retry = null
                     callback.onResult(items as MutableList<VideoModel>, nextPage)
+                    networkState.postValue(NetworkState.LOADED)
                 } else {
                     retry = {
                         loadAfter(params, callback)
                     }
+                    networkState.postValue(
+                            NetworkState.error("error code: ${response?.code()}"))
                 }
             }
 
