@@ -9,7 +9,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
@@ -25,26 +25,20 @@ import com.dew.edward.youtubedatatest.model.VideoModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
 import com.dew.edward.youtubedatatest.modules.GlideApp
 import com.dew.edward.youtubedatatest.repository.NetworkState
-import com.dew.edward.youtubedatatest.repository.YoutubePostRepository
 import com.dew.edward.youtubedatatest.util.BROADCAST_DATA_CHANGED
-import com.dew.edward.youtubedatatest.util.ServiceLocator
 import com.dew.edward.youtubedatatest.util.VideoApp
-import com.dew.edward.youtubedatatest.viewmodel.VideoViewModel
+import com.dew.edward.youtubedatatest.viewmodel.DbVideoViewModel
 import kotlinx.android.synthetic.main.activity_search.*
+import java.util.concurrent.Executors
 
-class SearchActivity : AppCompatActivity() {
+class DbAndSearchActivity : AppCompatActivity() {
+
     companion object {
         const val KEY_QUERY = "query"
         const val DEFAULT_QUERY = "trump"
-        const val KEY_REPOSITORY_TYPE = "repository_type"
-        fun intentFor(context: Context, type: YoutubePostRepository.Type): Intent{
-            val intent = Intent(context, SearchActivity::class.java)
-            intent.putExtra(KEY_REPOSITORY_TYPE, type.ordinal)
-            return intent
-        }
     }
 
-    private lateinit var videoViewModel: VideoViewModel
+    private lateinit var videoViewModel: DbVideoViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,28 +54,23 @@ class SearchActivity : AppCompatActivity() {
         VideoApp.localBroadcastManager.registerReceiver(dataChangedReceiver, IntentFilter(BROADCAST_DATA_CHANGED))
     }
 
-    private fun getViewModel(): VideoViewModel {
-        return ViewModelProviders.of(this, object : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                val typeParam = intent.getIntExtra(KEY_REPOSITORY_TYPE, 0)
-                val repositoryType = YoutubePostRepository.Type.values()[typeParam]
-                val repository = ServiceLocator.getInstance(this@SearchActivity).getRepository(repositoryType)
-                return VideoViewModel(repository) as T
-            }
-        })[VideoViewModel::class.java]
-    }
+    private fun getViewModel(): DbVideoViewModel =
+            ViewModelProviders.of(this, object : ViewModelProvider.Factory {
+                override fun <T : ViewModel?> create(modelClass: Class<T>): T =
+                        DbVideoViewModel(this@DbAndSearchActivity) as T
+            })[DbVideoViewModel::class.java]
 
-    private fun initRecyclerView(){
+    private fun initRecyclerView() {
         val glide = GlideApp.with(this)
         val adapter = VideoModelAdapter(glide, { videoViewModel.retry() }, {
-            val intent = Intent(this@SearchActivity, VideoPlayActivity::class.java)
+            val intent = Intent(this@DbAndSearchActivity, VideoPlayActivity::class.java)
             ChannelModel(it.title, "", it.date, it.thumbnail, it.videoId)
             intent.putExtra(CHANNEL_MODEL,
                     ChannelModel(it.title, "", it.date, it.thumbnail, it.videoId))
             startActivity(intent)
         })
 
-        if (resources.configuration.orientation == ORIENTATION_LANDSCAPE){
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             videoList.layoutManager = GridLayoutManager(this, 2)
         } else {
             videoList.layoutManager = LinearLayoutManager(this)
@@ -89,7 +78,7 @@ class SearchActivity : AppCompatActivity() {
 
         videoList.adapter = adapter
         videoList.setHasFixedSize(true)
-        videoViewModel.posts.observe(this, Observer <PagedList<VideoModel>>{
+        videoViewModel.posts.observe(this, Observer<PagedList<VideoModel>> {
             adapter.submitList(it)
         })
         videoViewModel.networkState.observe(this, Observer {
@@ -99,7 +88,7 @@ class SearchActivity : AppCompatActivity() {
 
     }
 
-    private fun initSwipeToRefresh(){
+    private fun initSwipeToRefresh() {
         videoViewModel.refreshState.observe(this, Observer {
             swipe_refresh.isRefreshing = it == NetworkState.LOADING
         })
@@ -108,9 +97,9 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    private fun initSearch(){
+    private fun initSearch() {
         input.setOnEditorActionListener { textView, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_GO){
+            if (actionId == EditorInfo.IME_ACTION_GO) {
                 updateQueryStringFromInput()
                 hideKeyboard()
                 true
@@ -120,7 +109,7 @@ class SearchActivity : AppCompatActivity() {
         }
 
         input.setOnKeyListener { view, keyCode, event ->
-            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 updateQueryStringFromInput()
                 hideKeyboard()
                 true
@@ -130,9 +119,9 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateQueryStringFromInput(){
+    private fun updateQueryStringFromInput() {
         input.text.trim().toString().let {
-            if (it.isNotEmpty()){
+            if (it.isNotEmpty()) {
                 if (videoViewModel.showSearchQuery(it)) {
                     videoList.scrollToPosition(0)
                     (videoList.adapter as? VideoModelAdapter)?.submitList(null)
@@ -148,18 +137,22 @@ class SearchActivity : AppCompatActivity() {
 
     private fun hideKeyboard() {
         val inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        if (inputManager.isAcceptingText){
+        if (inputManager.isAcceptingText) {
             inputManager.hideSoftInputFromWindow(currentFocus.windowToken, 0)
         }
     }
 
-    private val dataChangedReceiver = object : BroadcastReceiver(){
+    private val dataChangedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             videoList.scrollToPosition(0)
         }
     }
 
     override fun onDestroy() {
+        Executors.newSingleThreadExecutor().execute {
+            videoViewModel.repository.db.videoDao().deleteVideosByQuery()
+        }
+
         VideoApp.localBroadcastManager.unregisterReceiver(dataChangedReceiver)
         super.onDestroy()
     }

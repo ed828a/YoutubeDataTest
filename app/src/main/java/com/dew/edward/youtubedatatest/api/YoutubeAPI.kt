@@ -23,14 +23,22 @@ interface YoutubeAPI {
                     @Query("type") type: String = "video",
                     @Query("key") key: String = API_KEY): Call<SearchVideoResponse>
 
+    @GET("search")
+    fun getRelatedVideos(@Query("relatedToVideoId") relatedToVideoId: String = "",
+                         @Query("pageToken") pageToken: String = "",
+                         @Query("part") part: String = "snippet",
+                         @Query("maxResults") maxResults: String = "$NETWORK_PAGE_SIZE",
+                         @Query("type") type: String = "video",
+                         @Query("key") key: String = API_KEY): Call<SearchVideoResponse>
+
     companion object {
         private const val YOUTUBE_BASE_URL = "https://www.googleapis.com/youtube/v3/"
-        private const val NETWORK_PAGE_SIZE = 10  //should be 50 in other case
+        private const val NETWORK_PAGE_SIZE = 50  //should be 50 in other case
 
         fun create(): YoutubeAPI = create(HttpUrl.parse(YOUTUBE_BASE_URL)!!)
         private fun create(httpUrl: HttpUrl): YoutubeAPI {
             val logger = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
-                Log.d("API", it)
+                Log.d("SearchVideoAPI", it)
             })
 
             logger.level = HttpLoggingInterceptor.Level.BASIC

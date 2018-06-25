@@ -1,25 +1,26 @@
 package com.dew.edward.youtubedatatest.viewmodel
 
-import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
-import com.dew.edward.youtubedatatest.repository.YoutubePostRepository
+import android.content.Context
+import com.dew.edward.youtubedatatest.repository.DbVideoModelRepository
 
 
 /**
- * Created by Edward on 6/21/2018.
+ * Created by Edward on 6/25/2018.
  */
-class VideoViewModel(private val repository: YoutubePostRepository) : ViewModel() {
+class DbVideoViewModel(context: Context): ViewModel() {
+    val repository = DbVideoModelRepository(context, true) // using inMemoryDb for now
 
     private val queryString = MutableLiveData<String>()
     private val searchResult =
             Transformations.map(queryString) {
                 repository.postsOfSearchYoutube(it, 30)
             }
-    val posts = Transformations.switchMap(searchResult, { it.pagedList })!!
-    val networkState = Transformations.switchMap(searchResult, { it.networkState })!!
-    val refreshState = Transformations.switchMap(searchResult, { it.refreshState })!!
+    val posts = Transformations.switchMap(searchResult) { it.pagedList }!!
+    val networkState = Transformations.switchMap(searchResult) { it.networkState }!!
+    val refreshState = Transformations.switchMap(searchResult) { it.refreshState }!!
 
     fun refresh() {
         searchResult.value?.refresh?.invoke()
@@ -38,4 +39,5 @@ class VideoViewModel(private val repository: YoutubePostRepository) : ViewModel(
     }
 
     fun currentQuery(): String? = queryString.value
+
 }

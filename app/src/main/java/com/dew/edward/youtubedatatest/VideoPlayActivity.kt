@@ -1,5 +1,6 @@
 package com.dew.edward.youtubedatatest
 
+import android.arch.lifecycle.LifecycleService
 import android.os.Bundle
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView

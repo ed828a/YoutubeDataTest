@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE){
-            mainListView.layoutManager = GridLayoutManager(this, 2)
+            mainListView.layoutManager = GridLayoutManager(this, 2) as RecyclerView.LayoutManager?
         } else {
             mainListView.layoutManager = LinearLayoutManager(this)
         }

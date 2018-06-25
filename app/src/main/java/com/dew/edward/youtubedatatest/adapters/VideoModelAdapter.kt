@@ -38,8 +38,11 @@ class VideoModelAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             R.layout.channel_post_cell -> {
-                (holder as VideoModelViewHolder).bind(getItem(position)!!)
-                holder.setOnItemSelectedListener(getItem(position)!!)
+                val item = getItem(position)
+                if (item != null) {
+                    (holder as VideoModelViewHolder).bind(item)
+                    holder.setOnItemSelectedListener(getItem(position)!!)
+                }
             }
             R.layout.network_state_item -> (holder as NetworkStateItemViewHolder).bindTo(networkState)
         }

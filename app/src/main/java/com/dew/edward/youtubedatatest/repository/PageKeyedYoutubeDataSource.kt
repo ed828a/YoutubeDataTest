@@ -51,7 +51,9 @@ class PageKeyedYoutubeDataSource(
             val response = request.execute()
             val data = response.body()
             val items = data?.items?.map{
-                VideoModel(it.snippet.title, it.snippet.publishedAt.extractDate(), it.snippet.thumbnails.high.url, it.id.videoId)
+                val video = VideoModel(it.snippet.title, it.snippet.publishedAt.extractDate(), it.snippet.thumbnails.high.url, it.id.videoId)
+                Log.d("ResponseData", "VideoModel: $video")
+                video
             }
             // update pageTokens
             prevPage = data?.prevPageToken ?: ""
@@ -90,7 +92,9 @@ class PageKeyedYoutubeDataSource(
                 if (response != null && response.isSuccessful){
                     val data = response.body()
                     val items = data?.items?.map {
-                        VideoModel(it.snippet.title, it.snippet.publishedAt.extractDate(), it.snippet.thumbnails.high.url, it.id.videoId)
+                        val video = VideoModel(it.snippet.title, it.snippet.publishedAt.extractDate(), it.snippet.thumbnails.high.url, it.id.videoId)
+                        Log.d("ResponseData", "VideoModel: $video")
+                        video
                     }
                     // update pageTokens
                     prevPage = data?.prevPageToken ?: ""
