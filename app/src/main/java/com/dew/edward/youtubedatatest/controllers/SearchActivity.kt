@@ -32,6 +32,9 @@ import com.dew.edward.youtubedatatest.util.VideoApp
 import com.dew.edward.youtubedatatest.viewmodel.VideoViewModel
 import kotlinx.android.synthetic.main.activity_search.*
 
+/**
+ * using Retrofit2, LiveData, Repository, ViewModel, Pagination
+ */
 class SearchActivity : AppCompatActivity() {
     companion object {
         const val KEY_QUERY = "query"

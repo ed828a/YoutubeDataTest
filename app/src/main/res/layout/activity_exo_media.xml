@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".controllers.ExoMediaActivity">
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.devbrackets.android.exomedia.ui.widget.VideoView
+            android:id="@+id/exoMediaPlayer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textExoVideoPlayTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/buttonSearch"
+        app:layout_constraintEnd_toStartOf="@id/buttonExoDownload"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/buttonExoSearch"
+        tools:text="NEW MOVIE TRAILERS 2018 | Weekly #22" />
+
+    <ImageButton
+        android:id="@+id/buttonExoDownload"
+        style="@android:style/Widget.Material.Light.ImageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:src="@drawable/download"
+        app:layout_constraintBottom_toBottomOf="@id/buttonExoSearch"
+        app:layout_constraintEnd_toStartOf="@id/buttonExoSearch"
+        app:layout_constraintTop_toTopOf="@id/buttonExoSearch" />
+
+    <android.support.v7.widget.SearchView
+        android:id="@+id/buttonExoSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/colorPrimaryText"
+        app:closeIcon="@drawable/ic_close"
+        app:iconifiedByDefault="true"
+        app:layout_constraintBottom_toTopOf="@id/recyclerExoRelatedListView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frameLayout"
+        app:layout_constraintVertical_bias="0.421"
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        app:queryHint="Search movies" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerExoRelatedListView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonExoSearch" />
+
+</android.support.constraint.ConstraintLayout>

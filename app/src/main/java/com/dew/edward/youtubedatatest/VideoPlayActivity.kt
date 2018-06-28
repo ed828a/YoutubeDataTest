@@ -55,7 +55,7 @@ class VideoPlayActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedList
                 channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
                 relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
                 isRelatedVideo = true
-                intent.putExtra(CHANNEL_MODEL, it)  
+                intent.putExtra(CHANNEL_MODEL, it)
 
                 YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
             }

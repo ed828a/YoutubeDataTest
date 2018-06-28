@@ -12,13 +12,16 @@ import android.support.v7.widget.SearchView
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import com.dew.edward.youtubedatatest.adapters.MainPostAdapter
+import com.dew.edward.youtubedatatest.controllers.ExoMediaActivity
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
 import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
-
+/**
+ * this one using naked OkHttp
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: MainPostAdapter
@@ -78,7 +81,8 @@ class MainActivity : AppCompatActivity() {
         adapter= MainPostAdapter(this, listData){
             channelModel ->
 
-            val intent = Intent(this, VideoPlayActivity::class.java)
+//            val intent = Intent(this, VideoPlayActivity::class.java)
+            val intent = Intent(this, ExoMediaActivity::class.java)
             Log.d("initList", channelModel.toString())
             intent.putExtra(CHANNEL_MODEL, channelModel)
             startActivity(intent)

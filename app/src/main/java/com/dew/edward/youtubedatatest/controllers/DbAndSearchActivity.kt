@@ -31,6 +31,10 @@ import com.dew.edward.youtubedatatest.viewmodel.DbVideoViewModel
 import kotlinx.android.synthetic.main.activity_search.*
 import java.util.concurrent.Executors
 
+
+/**
+ * using Retrofit2, LiveData, Repository, ViewModel, Pagination, DB
+ */
 class DbAndSearchActivity : AppCompatActivity() {
 
     companion object {
