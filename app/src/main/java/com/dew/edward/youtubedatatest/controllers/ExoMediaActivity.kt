@@ -15,6 +15,7 @@ import com.dew.edward.youtubedatatest.R
 import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
+import com.dew.edward.youtubedatatest.modules.KEY_SAVED_POSITION
 import com.dew.edward.youtubedatatest.modules.SEARCH_RELATED_PART1
 import com.dew.edward.youtubedatatest.modules.SEARCH_RELATED_PART2
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
@@ -35,6 +36,7 @@ class ExoMediaActivity : AppCompatActivity() {
 
     val okHttpClientBuilder: OkHttpClient.Builder? = null
     val extractor = YouTubeExtractor.Builder().okHttpClientBuilder(okHttpClientBuilder).build()
+    private var savedPosition: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +48,10 @@ class ExoMediaActivity : AppCompatActivity() {
         Log.d("Rotate", "Related Video Url: $relatedVideoGetUrl")
 
         Log.d("ExoMediaActivity", "channelModel.videoId: ${channelModel.videoId}")
+        if (savedInstanceState != null) {
+            savedPosition = savedInstanceState.getInt(KEY_SAVED_POSITION, 0)
+        }
+
         extractor.extract(channelModel.videoId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -59,9 +65,12 @@ class ExoMediaActivity : AppCompatActivity() {
                 )
 
         exoMediaPlayer.setOnPreparedListener{
-            exoMediaPlayer.volume = 1.0f
-            exoMediaPlayer.seekTo(0L)
-            exoMediaPlayer.start()
+            with(exoMediaPlayer){
+                volume = 1.0f
+                seekTo(savedPosition.toLong())
+                start()
+            }
+
         }
 
         exoMediaPlayer.setOnErrorListener { e ->
@@ -69,81 +78,86 @@ class ExoMediaActivity : AppCompatActivity() {
             false
         }
 
-//        queryViewModel = QueryUrlViewModel()
-//        if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-//            textExoVideoPlayTitle?.text = channelModel.title
-//
-//            listView = recyclerExoRelatedListView
-//            listView.layoutManager = GridLayoutManager(this, 2)
-//            listView.adapter = RelatedVideoAdapter(this, relatedVideoList) {
-//
-//                //                VideoApp.mYoutubePlayer?.release()
-//                extractor.extract(channelModel.videoId)
-//                        .subscribeOn(Schedulers.io())
-//                        .observeOn(AndroidSchedulers.mainThread())
-//                        .subscribe(
-//                                { extraction ->
-//                                    bindVideoToPlayer(extraction)
-//                                },
-//                                { error ->
-//                                    errorHandler(error)
-//                                }
-//                        )
-//
-//                textExoVideoPlayTitle?.text = it.title
-//                channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
-//                relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
-//                isRelatedVideo = true
-//                intent.putExtra(CHANNEL_MODEL, it)
-//
-//                YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
-//            }
-//
-//            YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
-//            buttonExoSearch.setOnSearchClickListener {
-//                buttonExoDownload.visibility = View.GONE
-//                textExoVideoPlayTitle.visibility = View.GONE
-//
-//                buttonExoSearch.onActionViewExpanded()
-//
-//            }
-//            buttonExoSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//                override fun onQueryTextSubmit(query: String?): Boolean {
-//                    var queryString: String = ""
-//                    val strings: List<String>? = query?.split(" ")
-//                    if (strings != null && strings.isNotEmpty()) {
-//                        for (position in 0 until strings.size) {
-//                            queryString = if (position == 0) {
-//                                strings[position]
-//                            } else {
-//                                "$queryString+${strings[position]}"
-//                            }
-//                        }
-//                    }
-//                    queryViewModel.query = queryString
-//
-//                    buttonExoSearch.onActionViewCollapsed()
-////                hideKeyboard()
-//                    buttonExoDownload.visibility = View.VISIBLE
-//                    textExoVideoPlayTitle.visibility = View.VISIBLE
-//
-//                    Log.d("QUERY", "queryURL: ${queryViewModel.getYoutubeQueryUrl()}")
-//                    YoutubeAPIRequest(relatedVideoList, queryViewModel.getYoutubeQueryUrl(),
-//                            listView.adapter).execute()
-//                    return false
-//                }
-//
-//                override fun onQueryTextChange(newText: String?): Boolean {
-//                    return false
-//                }
-//            })
-//        }
+        queryViewModel = QueryUrlViewModel()
+        if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+            textExoVideoPlayTitle?.text = channelModel.title
+
+            listView = recyclerExoRelatedListView
+            listView.layoutManager = GridLayoutManager(this, 2) as RecyclerView.LayoutManager?
+            listView.adapter = RelatedVideoAdapter(this, relatedVideoList) {
+
+                //                VideoApp.mYoutubePlayer?.release()
+                extractor.extract(channelModel.videoId)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                { extraction ->
+                                    bindVideoToPlayer(extraction)
+                                },
+                                { error ->
+                                    errorHandler(error)
+                                }
+                        )
+
+                textExoVideoPlayTitle?.text = it.title
+                channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
+                relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
+                isRelatedVideo = true
+                intent.putExtra(CHANNEL_MODEL, it)
+
+                YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
+            }
+
+            YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
+            buttonExoSearch.setOnSearchClickListener {
+                buttonExoDownload.visibility = View.GONE
+                textExoVideoPlayTitle.visibility = View.GONE
+
+                buttonExoSearch.onActionViewExpanded()
+
+            }
+            buttonExoSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    var queryString: String = ""
+                    val strings: List<String>? = query?.split(" ")
+                    if (strings != null && strings.isNotEmpty()) {
+                        for (position in 0 until strings.size) {
+                            queryString = if (position == 0) {
+                                strings[position]
+                            } else {
+                                "$queryString+${strings[position]}"
+                            }
+                        }
+                    }
+                    queryViewModel.query = queryString
+
+                    buttonExoSearch.onActionViewCollapsed()
+//                hideKeyboard()
+                    buttonExoDownload.visibility = View.VISIBLE
+                    textExoVideoPlayTitle.visibility = View.VISIBLE
+
+                    Log.d("QUERY", "queryURL: ${queryViewModel.getYoutubeQueryUrl()}")
+                    YoutubeAPIRequest(relatedVideoList, queryViewModel.getYoutubeQueryUrl(),
+                            listView.adapter).execute()
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    return false
+                }
+            })
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        exoMediaPlayer.seekTo(0L)
+        exoMediaPlayer.seekTo(savedPosition.toLong())
         exoMediaPlayer.start()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_SAVED_POSITION, savedPosition)
     }
 
     fun downloadVideo(view: View) {

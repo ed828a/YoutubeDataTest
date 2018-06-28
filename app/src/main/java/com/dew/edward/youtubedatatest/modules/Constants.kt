@@ -16,3 +16,4 @@ const val QUERY = "Query"
 const val GET_REQUEST_URL = "GET REQUEST URL"
 const val GET_RESPONSE = "RESPONSE"
 const val TAB_TOTAL = 3
+const val KEY_SAVED_POSITION = "saved_position"
