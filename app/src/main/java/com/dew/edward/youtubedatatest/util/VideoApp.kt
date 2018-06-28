@@ -2,6 +2,7 @@ package com.dew.edward.youtubedatatest.util
 
 import android.app.Application
 import android.support.v4.content.LocalBroadcastManager
+import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.youtube.player.YouTubePlayer
 
 
@@ -13,6 +14,7 @@ class VideoApp: Application() {
     companion object {
         lateinit var localBroadcastManager: LocalBroadcastManager
         var mYoutubePlayer: YouTubePlayer? = null
+
     }
 
     override fun onCreate() {

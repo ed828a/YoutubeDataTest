@@ -51,7 +51,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".controllers.ExoMediaActivity"></activity>
+        <activity android:name=".controllers.ExoMediaActivity" />
+        <activity android:name=".controllers.ExoPlayerActivity"></activity>
     </application>
 
 </manifest>

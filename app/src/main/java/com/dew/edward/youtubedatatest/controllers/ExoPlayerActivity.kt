@@ -1,5 +1,7 @@
 package com.dew.edward.youtubedatatest.controllers
 
+import android.content.Context
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -8,25 +10,37 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import com.commit451.youtubeextractor.YouTubeExtraction
 import com.commit451.youtubeextractor.YouTubeExtractor
 import com.dew.edward.youtubedatatest.R
-import com.dew.edward.youtubedatatest.R.id.*
 import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
-import com.dew.edward.youtubedatatest.modules.KEY_SAVED_POSITION
 import com.dew.edward.youtubedatatest.modules.SEARCH_RELATED_PART1
 import com.dew.edward.youtubedatatest.modules.SEARCH_RELATED_PART2
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
 import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
+import com.google.android.exoplayer2.ExoPlayerFactory
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
+import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.ui.PlayerControlView
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.TransferListener
+import com.google.android.exoplayer2.util.Util
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_exo_media.*
+import kotlinx.android.synthetic.main.activity_exo_player.*
 import okhttp3.OkHttpClient
 
-class ExoMediaActivity : AppCompatActivity() {
+class ExoPlayerActivity : AppCompatActivity() {
 
     lateinit var channelModel: ChannelModel
     lateinit var relatedVideoGetUrl: String
@@ -35,23 +49,33 @@ class ExoMediaActivity : AppCompatActivity() {
     lateinit var listView: RecyclerView
     lateinit var queryViewModel: QueryUrlViewModel
 
-    val okHttpClientBuilder: OkHttpClient.Builder? = null
+    private val okHttpClientBuilder: OkHttpClient.Builder? = null
     val extractor = YouTubeExtractor.Builder().okHttpClientBuilder(okHttpClientBuilder).build()
-    private var savedPosition: Int = 0
+
+
+//    private var simpleExoPlayerView: SimpleExoPlayerView? = null
+    private var player: SimpleExoPlayer? = null
+
+    private lateinit var window: Timeline.Window
+    private var mediaDataSourceFactory: DataSource.Factory? = null
+//    private var trackSelector: DefaultTrackSelector? = null
+    private var shouldAutoPlay: Boolean = false
+//    private lateinit var bandwidthMeter: BandwidthMeter
+
+    private var ivHideControllerButton: ImageView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_exo_media)
+        setContentView(R.layout.activity_exo_player)
 
         channelModel = intent.getParcelableExtra(CHANNEL_MODEL)
 
         relatedVideoGetUrl = SEARCH_RELATED_PART1 + channelModel.videoId + SEARCH_RELATED_PART2
         Log.d("Rotate", "Related Video Url: $relatedVideoGetUrl")
 
-        Log.d("ExoMediaActivity", "channelModel.videoId: ${channelModel.videoId}")
-        if (savedInstanceState != null) {
-            savedPosition = savedInstanceState.getInt(KEY_SAVED_POSITION, 0)
-        }
+        shouldAutoPlay = true
+        window = Timeline.Window()
+        ivHideControllerButton = findViewById<View>(R.id.exo_controller) as ImageView?
 
         extractor.extract(channelModel.videoId)
                 .subscribeOn(Schedulers.io())
@@ -65,26 +89,11 @@ class ExoMediaActivity : AppCompatActivity() {
                         }
                 )
 
-        exoMediaPlayer.videoControls?.setFastForwardButtonEnabled(true)
-        exoMediaPlayer.setOnPreparedListener{
-            with(exoMediaPlayer){
-                volume = 1.0f
-                seekTo(savedPosition.toLong())
-                start()
-            }
-
-        }
-
-        exoMediaPlayer.setOnErrorListener { e ->
-            e.printStackTrace()
-            false
-        }
-
         queryViewModel = QueryUrlViewModel()
         if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-            textExoVideoPlayTitle?.text = channelModel.title
+            textExoPlayerTitle?.text = channelModel.title
 
-            listView = recyclerExoRelatedListView
+            listView = recyclerExoPlayerRelatedListView
             listView.layoutManager = GridLayoutManager(this, 2) as RecyclerView.LayoutManager?
             listView.adapter = RelatedVideoAdapter(this, relatedVideoList) {
 
@@ -101,7 +110,7 @@ class ExoMediaActivity : AppCompatActivity() {
                                 }
                         )
 
-                textExoVideoPlayTitle?.text = it.title
+                textExoPlayerTitle?.text = it.title
                 channelModel = ChannelModel(it.title, it.channelTitle, it.publishedAt, it.thumbNail, it.videoId)
                 relatedVideoGetUrl = SEARCH_RELATED_PART1 + it.videoId + SEARCH_RELATED_PART2
                 isRelatedVideo = true
@@ -111,14 +120,14 @@ class ExoMediaActivity : AppCompatActivity() {
             }
 
             YoutubeAPIRequest(relatedVideoList, relatedVideoGetUrl, listView.adapter).execute()
-            buttonExoSearch.setOnSearchClickListener {
-                buttonExoDownload.visibility = View.GONE
-                textExoVideoPlayTitle.visibility = View.GONE
+            buttonExoPlayerSearch.setOnSearchClickListener {
+                buttonExoPlayerDownload.visibility = View.GONE
+                textExoPlayerTitle.visibility = View.GONE
 
-                buttonExoSearch.onActionViewExpanded()
+                buttonExoPlayerSearch.onActionViewExpanded()
 
             }
-            buttonExoSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            buttonExoPlayerSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     var queryString: String = ""
                     val strings: List<String>? = query?.split(" ")
@@ -133,10 +142,10 @@ class ExoMediaActivity : AppCompatActivity() {
                     }
                     queryViewModel.query = queryString
 
-                    buttonExoSearch.onActionViewCollapsed()
+                    buttonExoPlayerSearch.onActionViewCollapsed()
 //                hideKeyboard()
-                    buttonExoDownload.visibility = View.VISIBLE
-                    textExoVideoPlayTitle.visibility = View.VISIBLE
+                    buttonExoPlayerDownload.visibility = View.VISIBLE
+                    textExoPlayerTitle.visibility = View.VISIBLE
 
                     Log.d("QUERY", "queryURL: ${queryViewModel.getYoutubeQueryUrl()}")
                     YoutubeAPIRequest(relatedVideoList, queryViewModel.getYoutubeQueryUrl(),
@@ -149,35 +158,83 @@ class ExoMediaActivity : AppCompatActivity() {
                 }
             })
         }
+
     }
 
-    override fun onResume() {
-        super.onResume()
-        exoMediaPlayer.seekTo(savedPosition.toLong())
-        exoMediaPlayer.start()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt(KEY_SAVED_POSITION, savedPosition)
-    }
-
-    fun downloadVideo(view: View) {
-        // video id should get out of Channel Model
-        val link = "https://www.youtube.com/watch?=${channelModel.videoId}"
-        Log.d("Download", "downloadVideo: $link")
-        // not completed yet
-    }
-
-    private fun errorHandler(t: Throwable) {
-        t.printStackTrace()
-        Toast.makeText(this@ExoMediaActivity, "It failed to extract URL from YouTube.", Toast.LENGTH_SHORT).show()
-    }
 
     private fun bindVideoToPlayer(result: YouTubeExtraction) {
         val videoUrl = result.videoStreams.first().url
         Log.d("ExoMediaActivity", "videoUrl: $videoUrl")
-        exoMediaPlayer.setVideoURI(Uri.parse(videoUrl))
+        initializePlayer(this@ExoPlayerActivity, videoUrl)
     }
 
+    private fun errorHandler(t: Throwable) {
+        t.printStackTrace()
+        Toast.makeText(this@ExoPlayerActivity, "It failed to extract URL from YouTube.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun initializePlayer(context: Context, videoUrl: String) {
+
+        exoPlayerView.requestFocus()
+        val bandwidthMeter = DefaultBandwidthMeter()
+        val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory(bandwidthMeter)
+        mediaDataSourceFactory = DefaultDataSourceFactory(context,
+                Util.getUserAgent(this, "ExoPlayerSample"),
+                bandwidthMeter as TransferListener<in DataSource>)
+
+        val trackSelector = DefaultTrackSelector(videoTrackSelectionFactory)
+
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector)
+
+        exoPlayerView.player = player
+        exoPlayerView.player.playWhenReady = shouldAutoPlay
+        /*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
+                mediaDataSourceFactory, mainHandler, null);*/
+
+        val extractorsFactory = DefaultExtractorsFactory()
+
+        val mediaSource = ExtractorMediaSource(Uri.parse(videoUrl), mediaDataSourceFactory, extractorsFactory, null, null)
+
+        (exoPlayerView.player as SimpleExoPlayer?)?.prepare(mediaSource)
+
+        ivHideControllerButton?.setOnClickListener { exoPlayerView.hideController() }
+
+    }
+
+    private fun releasePlayer() {
+        if (exoPlayerView.player != null) {
+            shouldAutoPlay = exoPlayerView.player.playWhenReady
+            exoPlayerView.player.release()
+            player = null
+//            trackSelector = null
+        }
+    }
+
+    public override fun onStart() {
+        super.onStart()
+        if (Util.SDK_INT > 23) {
+//            initializePlayer()
+        }
+    }
+
+    public override fun onResume() {
+        super.onResume()
+        if (Util.SDK_INT <= 23 || player == null) {
+//            initializePlayer()
+        }
+    }
+
+    public override fun onPause() {
+        super.onPause()
+        if (Util.SDK_INT <= 23) {
+            releasePlayer()
+        }
+    }
+
+    public override fun onStop() {
+        super.onStop()
+        if (Util.SDK_INT > 23) {
+            releasePlayer()
+        }
+    }
 }
