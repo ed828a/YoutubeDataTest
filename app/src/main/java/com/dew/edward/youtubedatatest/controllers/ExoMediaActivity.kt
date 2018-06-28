@@ -12,6 +12,7 @@ import android.widget.Toast
 import com.commit451.youtubeextractor.YouTubeExtraction
 import com.commit451.youtubeextractor.YouTubeExtractor
 import com.dew.edward.youtubedatatest.R
+import com.dew.edward.youtubedatatest.R.id.*
 import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
