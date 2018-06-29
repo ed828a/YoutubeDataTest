@@ -6,3 +6,4 @@ package com.dew.edward.youtubedatatest.util
  */
 
 const val BROADCAST_DATA_CHANGED = "BROADCAST_DATA_CHANGED"
+const val PLAYBACKPOSITION = "playback position"

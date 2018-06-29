@@ -52,7 +52,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".controllers.ExoMediaActivity" />
-        <activity android:name=".controllers.ExoPlayerActivity"></activity>
+        <activity android:name=".controllers.ExoPlayerActivity" />
+        <activity android:name=".controllers.NewExoPlayerActivity"></activity>
     </application>
 
 </manifest>
