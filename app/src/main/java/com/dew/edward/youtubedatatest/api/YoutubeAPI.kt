@@ -6,6 +6,7 @@ import com.dew.edward.youtubedatatest.model.VideoModel
 import com.dew.edward.youtubedatatest.modules.API_KEY
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -30,6 +31,11 @@ interface YoutubeAPI {
                          @Query("maxResults") maxResults: String = "$NETWORK_PAGE_SIZE",
                          @Query("type") type: String = "video",
                          @Query("key") key: String = API_KEY): Call<SearchVideoResponse>
+
+
+    @GET("https://i.ytimg.com/vi/UG8D2mJHlq4/mqdefault.jpg")
+    fun downloadVideo(): Call<ResponseBody>
+
 
     companion object {
         private const val YOUTUBE_BASE_URL = "https://www.googleapis.com/youtube/v3/"
