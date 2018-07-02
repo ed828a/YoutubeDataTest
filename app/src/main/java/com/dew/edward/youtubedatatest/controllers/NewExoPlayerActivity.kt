@@ -2,8 +2,12 @@ package com.dew.edward.youtubedatatest.controllers
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -15,12 +19,15 @@ import com.commit451.youtubeextractor.YouTubeExtraction
 import com.commit451.youtubeextractor.YouTubeExtractor
 import com.dew.edward.youtubedatatest.R
 import com.dew.edward.youtubedatatest.adapters.RelatedVideoAdapter
+import com.dew.edward.youtubedatatest.api.YoutubeAPI
 import com.dew.edward.youtubedatatest.model.ChannelModel
 import com.dew.edward.youtubedatatest.modules.CHANNEL_MODEL
 import com.dew.edward.youtubedatatest.modules.SEARCH_RELATED_PART1
 import com.dew.edward.youtubedatatest.modules.SEARCH_RELATED_PART2
 import com.dew.edward.youtubedatatest.repository.YoutubeAPIRequest
+import com.dew.edward.youtubedatatest.util.MY_PERMISSIONS_REQUEST
 import com.dew.edward.youtubedatatest.util.PLAYBACKPOSITION
+import com.dew.edward.youtubedatatest.util.defaultDownloadUrl
 import com.dew.edward.youtubedatatest.viewmodels.QueryUrlViewModel
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
@@ -39,7 +46,15 @@ import com.google.android.exoplayer2.util.Util
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_new_exo_player.*
+import kotlinx.android.synthetic.main.activity_video_play.*
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import java.io.*
+import java.util.concurrent.Executors
 
 class NewExoPlayerActivity : AppCompatActivity() {
 
@@ -67,6 +82,12 @@ class NewExoPlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_new_exo_player)
 
         playerView = findViewById(R.id.video_view)
+
+        if (ContextCompat.checkSelfPermission(this@NewExoPlayerActivity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this@NewExoPlayerActivity, arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_REQUEST)
+        }
+
+        Log.d("writeResponseBodyToDisk", "onCreate: isExternalStorageWritable: ${Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED}")
 
         if (savedInstanceState != null){
             playbackPosition = savedInstanceState.getLong(PLAYBACKPOSITION)
@@ -159,9 +180,82 @@ class NewExoPlayerActivity : AppCompatActivity() {
                     return false
                 }
             })
+
+            buttonExoPlayerDownload.setOnClickListener{
+                val myVideoUrl = defaultDownloadUrl
+                val downloadAPIRetrofit = Retrofit.Builder()
+                        .baseUrl("https://r3---sn-ppoxu-5qaz.googlevideo.com/")
+                        .build()
+                val downloadApi = downloadAPIRetrofit.create(YoutubeAPI::class.java)
+                val call = downloadApi.downloadVideoByUrlStream(myVideoUrl)
+                call.enqueue(object : Callback<ResponseBody> {
+                    override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+
+                        Toast.makeText(this@NewExoPlayerActivity, "download failed", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                        if (response != null && response.isSuccessful) {
+                            Executors.newSingleThreadExecutor().execute {
+                                Log.d("writeResponseBodyToDisk", "file downloading started. response: $response")
+                                val isSuccess = writeResponseBodyToDisk(response!!.body()!!)
+                                Log.d("writeResponseBodyToDisk", "was file download successful: $isSuccess ")
+                            }
+                        } else {
+                            Log.d("writeResponseBodyToDisk", "Response Error: ${response?.message()}")
+                        }
+                    }
+                })
+
+            }
         }
 
     }
+
+    private fun writeResponseBodyToDisk(body: ResponseBody): Boolean {
+
+        val fileFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        Log.d("writeResponseBodyToDisk", "filename = ${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}")
+        val file = File(fileFolder, "mqdefault.mp4")
+        var inputStream: InputStream? = null
+        var outputStream: OutputStream? = null
+
+        try {
+            val fileReader = ByteArray(4096)
+
+            val fileSize = body.contentLength()
+            var fileSizeDownloaded: Long = 0
+
+            inputStream = body.byteStream()
+            outputStream = FileOutputStream(file)
+
+            while (true) {
+                val read = inputStream.read(fileReader)
+
+                if (read == -1) {
+                    break
+                }
+
+                outputStream.write(fileReader, 0, read)
+
+                fileSizeDownloaded += read.toLong()
+
+                Log.d("writeResponseBodyToDisk", "file download: $fileSizeDownloaded Downloaded of $fileSize")
+            }
+
+            outputStream.flush()
+
+            return true
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return false
+        } finally {
+            inputStream?.close()
+            outputStream?.close()
+
+        }
+    }
+
 
     private fun bindVideoToPlayer(result: YouTubeExtraction) {
         val videoUrl = result.videoStreams.first().url
