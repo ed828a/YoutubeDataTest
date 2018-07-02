@@ -13,6 +13,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import retrofit2.http.Streaming
+import retrofit2.http.Url
 
 interface YoutubeAPI {
 
@@ -36,6 +38,13 @@ interface YoutubeAPI {
     @GET("https://i.ytimg.com/vi/UG8D2mJHlq4/mqdefault.jpg")
     fun downloadVideo(): Call<ResponseBody>
 
+
+    @GET
+    fun downloadVideoByUrl(@Url url: String): Call<ResponseBody>
+
+    @Streaming
+    @GET
+    fun downloadVideoByUrlStream(@Url url: String): Call<ResponseBody>
 
     companion object {
         private const val YOUTUBE_BASE_URL = "https://www.googleapis.com/youtube/v3/"
